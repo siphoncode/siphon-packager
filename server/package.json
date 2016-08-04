@@ -1,0 +1,11 @@
+{
+  "name": "packager-server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Siphon",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "pm2": "0.15.10"
+  }
+}

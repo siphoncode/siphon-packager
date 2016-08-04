@@ -1,0 +1,16 @@
+{
+  "name": "0.4",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "author": "Siphon",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "image-size": "0.4.0",
+    "precinct": "2.5.1",
+    "superagent": "1.4.0",
+    "toposort": "0.2.12",
+    "uglify-js": "2.6.1",
+    "yargs": "3.26.0"
+  }
+}

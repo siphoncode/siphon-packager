@@ -1,0 +1,24 @@
+{
+  "headers": {
+    "sdk": {
+      "platform": "ios",
+      "dest": "../siphon-sdk-ios/SiphonSDK/SiphonSDK/Supporting Files"
+    }
+  },
+  "assets": {
+    "example": {
+      "platform": "ios",
+      "dest": "../siphon-sdk-ios/Example/Siphon"
+    },
+    "example-sandbox": {
+      "platform": "ios",
+      "dest": "../siphon-sdk-ios/Example/Siphon",
+      "project_path": "../siphon-sandbox"
+    },
+    "sandbox": {
+      "platform": "ios",
+      "dest": ".",
+      "project_path": "../siphon-sandbox"
+    }
+  }
+}

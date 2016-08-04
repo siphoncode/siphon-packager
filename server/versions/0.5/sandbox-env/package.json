@@ -1,0 +1,28 @@
+{
+  "author": "Siphon",
+  "dependencies": {
+    "react-native": "https://github.com/getsiphon/react-native#2337f4d",
+    "react-native-camera": "https://github.com/getsiphon/react-native-camera#1339dfc",
+    "react-native-circular-progress": "0.0.6",
+    "react-native-contacts": "https://github.com/getsiphon/react-native-contacts#c06ea40",
+    "react-native-device-info": "0.8.4",
+    "react-native-fbsdk": "https://github.com/getsiphon/react-native-fbsdk#48a27df",
+    "react-native-fs": "https://github.com/getsiphon/react-native-fs#b4b975d",
+    "react-native-grid-view": "https://github.com/lucholaf/react-native-grid-view#74602c5",
+    "react-native-linear-gradient": "1.5.2",
+    "react-native-maps": "https://github.com/getsiphon/react-native-maps#0c00043",
+    "react-native-material-kit": "0.3.0",
+    "react-native-motion-manager": "0.0.6",
+    "react-native-touch-id": "1.2.4",
+    "react-native-vector-icons": "1.3.4",
+    "react-native-video": "0.7.1",
+    "react-native-youtube": "0.6.0",
+    "superagent": "1.4.0",
+    "underscore": "1.8.3"
+  },
+  "description": "",
+  "license": "UNLICENSED",
+  "main": "index.js",
+  "name": "sandbox-env0.5",
+  "version": "1.0.0"
+}

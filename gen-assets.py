@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
+from zipfile import ZipFile
+
+from siphon.packager.utils import cd, ensure_dir_exists, make_temp_dir
+from siphon.packager.utils import write_directory_zip
+
+ASSET_FORMATS = {
+    'image': ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'svg', 'webp']
+}
+
+CONF = os.path.join(os.path.dirname(__file__), 'gen-conf.json')
+
+def assets_list(project_root):
+    assets = []
+    for root, dirs, files in os.walk(project_root):
+        for f in files:
+            if any(f.endswith(a) for a in ASSET_FORMATS['image']):
+                assets.append(os.path.join(root, f))
+    return assets
+
+
+def print_usage():
+    print('Required arguments:\n* --project-path /path/to/project' \
+          '\n* --dest /path/to/dest' \
+          '\n* --platform <ios/android>' \
+          '\n\nOptional arguments:\n* --minify' \
+          '\n* --base-version <base_version>' \
+          '\n* --conf <conf_name>')
+
+def main():
+    # Takes a project root and destination as arguments and writes the zipped
+    # assets to that location.
+
+    # If a conf has been provided, collect the specified params
+    conf = {}
+    if '--conf' in sys.argv:
+        try:
+            conf_name = sys.argv[sys.argv.index('--conf') + 1]
+        except (ValueError, IndexError):
+            print_usage()
+            sys.exit(1)
+
+        with open(CONF, 'r') as f:
+            conf_file = json.loads(f.read())
+
+        conf = conf_file['assets'].get(conf_name)
+        if not conf:
+            print('Specified config not found in conf.json')
+            sys.exit(1)
+
+    # Required args
+    try:
+        if conf.get('project_path'):
+            project_root = conf.get('project_path')
+        else:
+            project_root = sys.argv[sys.argv.index('--project-path') + 1]
+
+        project_root = os.path.abspath(project_root)
+
+        if conf.get('dest'):
+            dest = conf.get('dest')
+        else:
+            dest = sys.argv[sys.argv.index('--dest') + 1]
+
+        if conf.get('platform'):
+            platform = conf.get('platform')
+        else:
+            platform = sys.argv[sys.argv.index('--platform') + 1]
+
+    except (ValueError, IndexError):
+        print_usage()
+        sys.exit(1)
+
+    cmd = [
+        'python',
+        'siphon-packager.py',
+        '--footer',
+        '--project-path',
+        project_root
+    ]
+
+    # Optional args
+    if '--minify' in sys.argv:
+        cmd.append('--minify')
+
+    if '--base-version' in sys.argv:
+        try:
+            base_version = sys.argv[sys.argv.index('--base-version') + 1]
+            cmd.append('--base-version')
+            cmd.append(base_version)
+        except IndexError:
+            print_usage()
+            sys.exit(1)
+
+    print('Generating footer...')
+    out = subprocess.check_output(cmd, env=os.environ.copy())
+    result = json.loads(out.decode())
+
+    platform_result = result.get(platform)
+    if not platform_result:
+        print('ERROR: Entry file not found for platform.')
+    else:
+        print('Done')
+        try:
+            with make_temp_dir() as tmp:
+                # Add assets-listing file
+                print('Collecting assets...')
+                asset_paths = assets_list(project_root)
+                assets_listing = os.path.join(tmp, 'assets-listing')
+                footer = os.path.join(tmp, 'bundle-footer')
+                shutil.copyfile(platform_result, footer)
+
+                # Copy the assets into our tmp dir and add them to the
+                # assets-listing file
+                with open(assets_listing, 'w') as f:
+                    for a in asset_paths:
+                        relative_path = a.replace(project_root, '')
+                        if relative_path[0] == '/':
+                            relative_path = relative_path[1:]
+
+                        asset_dest = os.path.join(tmp, '__siphon_assets',
+                                                  'images',
+                                                  relative_path)
+                        os.makedirs(os.path.dirname(asset_dest),
+                                    exist_ok=True)
+                        shutil.copyfile(a, asset_dest)
+                        f.write('%s\n' % relative_path)
+
+                # Add items to zip archive
+                zip_path = os.path.join(tmp, 'assets.zip')
+                with cd(tmp):
+                    with ZipFile(zip_path, 'w') as zf:
+                        write_directory_zip('__siphon_assets/images', zf)
+                        zf.write('assets-listing')
+                        zf.write('bundle-footer')
+                # Copy the zip archive to the destination
+                ensure_dir_exists(dest)
+                shutil.copyfile(zip_path, os.path.join(dest, 'assets.zip'))
+        finally:
+            # Clean up the tmp directory generated by the packager if it exists
+            tmp = tempfile.gettempdir()
+            for f in os.listdir(tmp):
+                if f.startswith('siphon-packager-tmp-'):
+                    shutil.rmtree(os.path.join(tmp, f))
+            print('Done')
+
+if __name__ == '__main__':
+    main()
